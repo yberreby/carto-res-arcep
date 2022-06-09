@@ -238,6 +238,10 @@ class Aligner:
         return (tr.T @ x.T).T
 
     def plot_measurements(self, num):
+        """
+        Show control points on top of image `num`.
+        """
+
         im = self.processed[num - 1].copy()
 
         color = (0, 0, 255)
@@ -286,6 +290,11 @@ class Aligner:
         )
 
     def show_overlay(self, ref_num, deriv_num):
+        """
+        Show image `deriv_num` overlaid with `ref_num` after alignement.
+        Useful to check the correctness of `ref.csv`.
+        """
+
         ref = self.processed[ref_num - 1]
         deriv = self.processed[deriv_num - 1]
         x = self.get_im_im_transform(ref_num, deriv_num)
@@ -300,13 +309,17 @@ class Aligner:
 
     def lamb_ref(self):
         """
-        Returns the Lamber93 coordinates of the reference points, as a numpy array.
+        Returns the Lambert93 coordinates of the reference points, as a numpy array.
         """
 
         geom = self.ref.to_crs(lamb).geometry
         return geoseries_to_np_xy(geom)
 
     def cities_coords_in_im(self, num):
+        """
+        Returns the list of city coordinates in image `num`'s intrinsic coordinate system.
+        """
+
         tr = self.get_lamb_im_transform(num)
 
         cl = self.cities_lamb
@@ -343,25 +356,25 @@ class Aligner:
 
     def plot_cities_in_im(self, process_result, write_to_disk=False, plot=True):
         num = process_result["im_num"]
-        cc = process_result["coordinates"]
-        cpis = process_result["patch_indices"]
-        cm = process_result["representative_colors"]
-        cov = process_result["classification"]
+        cities_coords = process_result["coordinates"]
+        patch_indices = process_result["patch_indices"]
+        repr_colors = process_result["representative_colors"]
+        coverage = process_result["classification"]
 
-        assert len(cc) == len(cm)
-        assert len(cc) == len(cov)
+        assert len(cities_coords) == len(repr_colors)
+        assert len(cities_coords) == len(coverage)
 
         im = self.processed[num - 1].copy()
 
         radius = 1
         thickness = 2
-        for i, x in enumerate(cc):
-            classified_col = class_colors[cov[i]]
-            mean_neigh_col = cm[i]
+        for i, x in enumerate(cities_coords):
+            classified_col = class_colors[coverage[i]]
+            mean_neigh_col = repr_colors[i]
             cv2.circle(im, tuple(x.astype(int)), radius, classified_col, thickness)
 
-            rstart = (cpis[i][0].start, cpis[i][1].start)
-            rend = (cpis[i][0].stop, cpis[i][1].stop)
+            rstart = (patch_indices[i][0].start, patch_indices[i][1].start)
+            rend = (patch_indices[i][0].stop, patch_indices[i][1].stop)
             cv2.rectangle(im, rstart, rend, mean_neigh_col.tolist())
 
         if write_to_disk:
@@ -374,14 +387,13 @@ class Aligner:
             plt.title(f"Cities in im-{num:02d}")
             print(f"Annotated im-{num:02d}")
 
-    def cities_patches(self, num, cc, pis):
-        n = len(cc)
+    def cities_patches(self, num, cities_coords, patch_indices):
+        n = len(cities_coords)
 
         patch_shape = (side, side, 3)
         patches = np.zeros((n,) + patch_shape, dtype=int)
 
-        # Slow.
-        for i, pi in enumerate(pis):
+        for i, pi in enumerate(patch_indices):
             # Beware of X/Y ordering!
             pi = (pi[1], pi[0], pi[2])
 
@@ -399,7 +411,9 @@ class Aligner:
 
     def classify_coverage(self, num, repr_colors):
         """
-        Étant donné un tableau `repr_colors` des couleurs RGB représentatives de chaque ville, renvoie un tableau 1D donnant la classification obtenue pour chaque ville:
+        Étant donné un tableau `repr_colors` des couleurs RGB représentatives de
+        chaque ville, renvoie un tableau 1D donnant la classification obtenue
+        pour chaque ville:
         - 0 en l'absence de couverture.
         - 1 s'il y a une couverture haut débit.
         - -1 si des données sont manquantes.

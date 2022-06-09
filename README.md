@@ -34,7 +34,7 @@ Pour chaque image `raw/map-XX.png`, dans GIMP :
 Les images finales sont donc `processed/im-01.png`, `processed/map-02.png`, ...,
 `processed/map-14.png`.
 
-Elles ont été mises à la disposition de la cliente hors GitHub. 
+Elles seront mises à la disposition de la cliente hors GitHub. 
 
 ### Mise en cohérence des systèmes de coordonnées
 
@@ -131,3 +131,14 @@ Une vérification visuelle des résultats est possible : [lien Google Drive](htt
 
 - [Code source du projet](https://github.com/yberreby/carto-res-arcep)
 - [Données produites par le programme](https://drive.google.com/drive/folders/1QSDqwGM51KmNDY8i_JgQVheoVwiJ4pGz?usp=sharing)
+
+
+## Usage du code
+
+- Les dépendances Python du projet sont spécifiées dans `requirements.txt`.
+- Exécuter le notebook `produce-report.ipynb` permet de regénérer `resultats.csv`.
+- Le notebook `check.ipynb` permet de contrôler visuellement l'alignement des
+différentes images.
+
+L'usage de Jupyter **Lab** est recommandé, afin de pouvoir zoomer de manière
+interactive sur les images dans les notebooks.
