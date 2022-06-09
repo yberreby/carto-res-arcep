@@ -1,0 +1,11 @@
+__pycache__
+raw
+processed
+.ipynb_checkpoints
+*.pdf
+*.png
+*.xcf
+*.ipynb
+*.txt
+*.csv
+.vscode
