@@ -14,7 +14,6 @@ from utils import *
 matplotlib.rc("image", origin="upper")
 
 
-
 # Fichier contenant les résultats du traitement.
 output_file = "resultats.csv"
 
@@ -43,7 +42,7 @@ CLASS_COVERED = 1
 # Couleurs des points affichés dans les images, en fonction de la classe.
 class_colors = {}
 class_colors[CLASS_UNKNOWN] = (255, 0, 255)
-class_colors[CLASS_NO_COVERAGE] = (0,255,0)
+class_colors[CLASS_NO_COVERAGE] = (0, 255, 0)
 class_colors[CLASS_COVERED] = (255, 0, 0)
 
 
@@ -68,19 +67,21 @@ def compute_patch_indices(cities_coords):
     return patch_indices
 
 
-
-def patch_repr_color(p, n_sample=400, value_threshold=None, sat_threshold=0.2,n_sample_min=200):
+def patch_repr_color(
+    p, n_sample=400, value_threshold=0.5, sat_threshold=0.2, n_sample_min=200
+):
     """
     Étant donné une section d'image p de dimensions (x,y,3),
     renvoie sa couleur représentative.
-    
+
     Il s'agit de la moyenne des `n_sample` pixels les plus saturés, parmi les
     pixels de "value" HSV supérieure à `value_threshold`.
 
-    S'il y a moins de `n_sample_min`
+    S'il y a moins de `n_sample_min` pixels éligibles, le résultat est considéré
+    comme indéfini.
     """
     undecided = np.array([np.nan, np.nan, np.nan])
-    
+
     if len(p) == 0:
         return undecided
 
@@ -88,7 +89,7 @@ def patch_repr_color(p, n_sample=400, value_threshold=None, sat_threshold=0.2,n_
     arr = p.reshape((-1, 3))
 
     # Convert to HSV
-    arr_hsv = matplotlib.colors.rgb_to_hsv(arr.astype(float) / 255.)
+    arr_hsv = matplotlib.colors.rgb_to_hsv(arr.astype(float) / 255.0)
 
     if value_threshold is not None:
         # Only keep elements that are bright enough.
@@ -127,7 +128,6 @@ def load_ref(path):
     df = pd.read_csv(path)
     gdf = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df.lng, df.lat, crs=maps))
     return gdf
-
 
 
 class Aligner:
@@ -219,7 +219,6 @@ class Aligner:
         self.build_classifiers()
         print("Built classifiers")
 
-        self.min_hsv_values = pd.read_csv("min_vals.csv", index_col="im")
         print("Loaded minimum HSV values")
 
     @cached_property
@@ -295,7 +294,6 @@ class Aligner:
 
         dst_shape = ref.shape[1::-1]
         res = cv2.warpAffine(deriv, warpMat, dst_shape)
-        # plot_im(res)
         blended = cv2.addWeighted(ref, 0.5, res, 0.5, 1)
         plot_im(blended)
         plt.title(f"Map {deriv_num} overlaid with map {ref_num}")
@@ -318,7 +316,6 @@ class Aligner:
 
         return (tr.T @ x.T).T
 
-
     def process_image(self, num):
         cc = self.cities_coords_in_im(num)
         cpis = compute_patch_indices(cc)
@@ -333,7 +330,7 @@ class Aligner:
             "coordinates": cc,
             "patch_indices": cpis,
             "representative_colors": cm,
-            "classification": cov
+            "classification": cov,
         }
 
     def process_all(self):
@@ -377,7 +374,6 @@ class Aligner:
             plt.title(f"Cities in im-{num:02d}")
             print(f"Annotated im-{num:02d}")
 
-
     def cities_patches(self, num, cc, pis):
         n = len(cc)
 
@@ -398,13 +394,7 @@ class Aligner:
     def cities_reprs(self, num, cities_coordinates, patch_indices):
         patches = self.cities_patches(num, cities_coordinates, patch_indices)
 
-        value_threshold = None
-        try:
-            value_threshold = self.min_hsv_values.loc[num]["min_val_percent"] / 100.
-        except Exception as e:
-            pass
-
-        filtered_patches = np.array(list(map(lambda p: patch_repr_color(p, value_threshold=value_threshold), patches)))
+        filtered_patches = np.array(list(map(patch_repr_color, patches)))
         return filtered_patches
 
     def classify_coverage(self, num, repr_colors):
