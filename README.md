@@ -31,7 +31,7 @@ Pour chaque image `raw/map-XX.png`, dans GIMP :
 - Sauvegarde de `processed/map-XX.xcf`
 - Export en PNG vers `processed/map-XX.png` (`Save gamma` coché, autres réglages par défaut)
 
-Les images finales sont donc `processed/im-01.png`, `processed/map-02.png`, ...,
+Les images finales sont donc `processed/map-01.png`, `processed/map-02.png`, ...,
 `processed/map-14.png`.
 
 Elles seront mises à la disposition de la cliente hors GitHub. 
