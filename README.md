@@ -34,7 +34,7 @@ Pour chaque image `raw/map-XX.png`, dans GIMP :
 Les images finales sont donc `processed/map-01.png`, `processed/map-02.png`, ...,
 `processed/map-14.png`.
 
-Elles seront mises à la disposition de la cliente hors GitHub. 
+Elles ont été mises à la disposition de la cliente hors GitHub. 
 
 ### Mise en cohérence des systèmes de coordonnées
 
